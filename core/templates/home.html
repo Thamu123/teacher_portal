@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Teacher Portal</title>
+  <link rel="stylesheet" href="{% static 'home_style.css'%}">
+</head>
+<body>
+  <nav class="navbar top">
+    <h1>T-Portal</h1>
+    <h1>Welcome, {{ request.user }}</h1>
+    <ul>
+      <li><a href="{% url 'home' %}">Home</a></li>
+      <li><a href="{% url 'logout' %}">Logout</a></li>
+    </ul>
+  </nav>
+
+  <div class="add-button">
+    <button onclick="showAddModal()">+ Add Student</button><br><br>
+  </div>
+  <div id="table-div">
+    <table border="1" id="studentsTable">
+      <thead>
+        <tr>
+          <th>S. No</th>
+          <th>Name</th>
+          <th>Subject</th>
+          <th>Marks</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- filled by JS -->
+      </tbody>
+    </table>
+  </div>
+  <div class="pagination-section">
+    <div id="pagination" style="margin: 20px; text-align: center;"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="addModal" class="modal">
+    <div class="modal-content">
+      <label for="newName">Name</label>
+      <div class="input-icon">
+        <span class="icon">👤</span>
+        <input type="text" id="newName" placeholder="Ravi Theja">
+      </div>
+
+      <label for="newSubject">Subject</label>
+      <div class="input-icon">
+        <span class="icon">📘</span>
+        <input type="text" id="newSubject" placeholder="Maths">
+      </div>
+
+      <label for="newMarks">Mark</label>
+      <div class="input-icon">
+        <span class="icon">🔖</span>
+        <input type="number" id="newMarks" placeholder="96">
+      </div>
+      <div class="error-message">
+
+      </div>
+      <div class="modal-footer">
+        <button class="cancel-btn" onclick="hideAddModal()">Cancel</button>
+        <button class="add-btn" onclick="addStudent()">Add</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetchStudents();
+    });
+
+    function fetchStudents(page = 1) {
+      fetch(`/api/students/?page=${page}`)
+        .then(res => res.json())
+        .then(data => {
+          const tbody = document.querySelector("#studentsTable tbody");
+          tbody.innerHTML = "";
+          data.results.forEach((student, index) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td contenteditable="true">${(index+1)+((page-1)*10)}</td>
+              <td contenteditable="true">${student.name}</td>
+              <td contenteditable="true">${student.subject}</td>
+              <td contenteditable="true">${student.marks}</td>
+              <td class="action-col">
+                <button class="std-update-btn" onclick="updateStudent(${student.id}, this)">Update</button>
+                <button class="std-del-btn" onclick="deleteStudent(${student.id})">Delete</button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          });
+          renderPagination(data.count, page);
+        });
+    }
+
+    function showAddModal() {
+      document.getElementById("addModal").classList.add("show");
+    }
+
+    function hideAddModal() {
+      document.getElementById("addModal").classList.remove("show");
+    }
+
+    function addStudent() {
+      const name = document.getElementById('newName').value;
+      const subject = document.getElementById('newSubject').value;
+      const marks = parseInt(document.getElementById('newMarks').value);
+      fetch('/api/students/', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken()},
+        body: JSON.stringify({name, subject, marks})
+      }).then(() => {
+        hideAddModal();
+        fetchStudents();
+        document.getElementById('newName').value = '';
+        document.getElementById('newSubject').value = '';
+        document.getElementById('newMarks').value = '';
+      });
+    }
+
+    function updateStudent(id, btn) {
+      const row = btn.closest('tr');
+      const name = row.children[1].innerText;
+      const subject = row.children[2].innerText;
+      const marks = parseInt(row.children[3].innerText);
+      fetch(`/api/students/${id}/`, {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken()},
+        body: JSON.stringify({name, subject, marks})
+      }).then(fetchStudents);
+    }
+
+    function deleteStudent(id) {
+      fetch(`/api/students/${id}/`, {
+        method: 'DELETE',
+        headers: {'X-CSRFToken': getCSRFToken()}
+      }).then(fetchStudents);
+    }
+
+    function getCSRFToken() {
+      let csrfToken = null;
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        const trimmed = cookie.trim();
+        if (trimmed.startsWith('csrftoken=')) {
+          csrfToken = trimmed.substring('csrftoken='.length);
+          break;
+        }
+      }
+      return csrfToken;
+    }
+
+    function renderPagination(totalCount, currentPage) {
+      console.log('----', currentPage, totalCount)
+      const paginationDiv = document.getElementById('pagination');
+      paginationDiv.innerHTML = '';
+
+      const totalPages = Math.ceil(totalCount / 10);
+
+      for (let page = 1; page <= totalPages; page++) {
+        const btn = document.createElement('button');
+        btn.textContent = page;
+        btn.onclick = () => fetchStudents(page);
+        paginationDiv.appendChild(btn);
+      }
+    }
+  </script>
+</body>
+</html>
