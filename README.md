@@ -22,6 +22,8 @@ python manage.py migrate
 # Enter email, name, password when prompted to create the user
 python manage.py create_teacher
 
+## Enter this command for creating sample 20 students
+python manage.py create_students
 
 ## Then finally run the server
 python manage.py runserver
