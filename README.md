@@ -4,7 +4,7 @@
 
 1. Clone the repo:
 
-git clone https://github.com/your-username/teacher-portal.git
+git clone https://github.com/Thamu123/teacher-portal.git
 cd teacher-portal
 
 ## Create a Virtual Env
@@ -16,6 +16,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Migration
+python manage.py makemigrations
 python manage.py migrate
 
 # Enter email, name, password when prompted to create the user
