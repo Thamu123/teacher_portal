@@ -131,7 +131,7 @@
         method: 'PUT',
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken()},
         body: JSON.stringify({name, subject, marks})
-      }).then(fetchStudents);
+      }).then(fetchStudents(1));
     }
 
     function deleteStudent(id) {

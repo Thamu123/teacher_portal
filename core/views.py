@@ -28,7 +28,7 @@ def home_view(request):
 
 # API views
 class StudentViewSet(viewsets.ModelViewSet):
-    queryset = Student.objects.all().order_by('id')
+    queryset = Student.objects.all().order_by('-id')
     serializer_class = StudentSerializer
 
     def list(self, request, *args, **kwargs):
