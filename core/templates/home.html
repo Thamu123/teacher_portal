@@ -82,7 +82,7 @@
           data.results.forEach((student, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td contenteditable="true">${(index+1)+((page-1)*10)}</td>
+              <td>${(index+1)+((page-1)*10)}</td>
               <td contenteditable="true">${student.name}</td>
               <td contenteditable="true">${student.subject}</td>
               <td contenteditable="true">${student.marks}</td>
@@ -138,7 +138,7 @@
       fetch(`/api/students/${id}/`, {
         method: 'DELETE',
         headers: {'X-CSRFToken': getCSRFToken()}
-      }).then(fetchStudents);
+      }).then(fetchStudents(1));
     }
 
     function getCSRFToken() {
