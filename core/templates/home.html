@@ -69,12 +69,12 @@
   </div>
 
   <script>
+    let currentPage = 1
     document.addEventListener('DOMContentLoaded', () => {
-      fetchStudents();
+      fetchStudents(currentPage);
     });
-
-    function fetchStudents(page = 1) {
-      fetch(`/api/students/?page=${page}`)
+    function fetchStudents(currentPage) {
+      fetch(`/api/students/?page=${currentPage}`)
         .then(res => res.json())
         .then(data => {
           const tbody = document.querySelector("#studentsTable tbody");
@@ -82,7 +82,7 @@
           data.results.forEach((student, index) => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td>${(index+1)+((page-1)*10)}</td>
+              <td>${(index+1)+((currentPage-1)*10)}</td>
               <td contenteditable="true">${student.name}</td>
               <td contenteditable="true">${student.subject}</td>
               <td contenteditable="true">${student.marks}</td>
@@ -93,7 +93,7 @@
             `;
             tbody.appendChild(tr);
           });
-          renderPagination(data.count, page);
+          renderPagination(data.count, currentPage);
         });
     }
 
@@ -131,14 +131,14 @@
         method: 'PUT',
         headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCSRFToken()},
         body: JSON.stringify({name, subject, marks})
-      }).then(fetchStudents(1));
+      }).then(fetchStudents(currentPage));
     }
 
     function deleteStudent(id) {
       fetch(`/api/students/${id}/`, {
         method: 'DELETE',
         headers: {'X-CSRFToken': getCSRFToken()}
-      }).then(fetchStudents(1));
+      }).then(fetchStudents(currentPage));
     }
 
     function getCSRFToken() {
@@ -154,8 +154,9 @@
       return csrfToken;
     }
 
-    function renderPagination(totalCount, currentPage) {
-      console.log('----', currentPage, totalCount)
+    function renderPagination(totalCount, activePage) {
+      currentPage = activePage
+      console.log('----', activePage, totalCount)
       const paginationDiv = document.getElementById('pagination');
       paginationDiv.innerHTML = '';
 
